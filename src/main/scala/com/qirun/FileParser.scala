@@ -7,15 +7,15 @@ object FileParser {
   /**
     * Read data from the text file
     * @param filePath The given data file path
-    * @return Tuple2(the iterator for data, the number of customers)
+    * @return Tuple2(the iterator for data, the number of colors)
     */
-  def readText(filePath: String): (Array[Customer], Set[Paint]) = {
+  def readText(filePath: String): ((Array[Customer], Set[Paint]), Int) = {
 
     val iterator = Source.fromFile(filePath).getLines()
 
     val size = getSize(iterator)
 
-    createCustomers(iterator, size)
+    (createCustomers(iterator), size)
   }
 
   /**
@@ -36,13 +36,15 @@ object FileParser {
   /**
     * Parse data line by line, build paints for each customers
     * @param iterator The iterator for data
-    * @param size The number of customers
     * @return Tuple2(customer array, the paint set)
     */
-  private def createCustomers(iterator: Iterator[String], size: Int): (Array[Customer], Set[Paint]) = {
+  private def createCustomers(iterator: Iterator[String]): (Array[Customer], Set[Paint]) = {
 
     var userArray = Array[Customer]()
     var paintSet = Set[Paint]()
+
+    val paintBuilder:(Array[String] => Paint) = {
+      c => Paint(c(0).toInt, if (c(1).equals("G")) Gloss else Matte)}
 
     while(iterator.hasNext) {
       var colorStrings = iterator.next().split(" ")
@@ -50,10 +52,7 @@ object FileParser {
       if(colorStrings.length % 2 != 0)
         throw new DataErrorException(s"${colorStrings.toString} is not correctly defined")
 
-      val paintBuilder:((Array[String] => Paint)) = {
-        c => Paint(c(0).toInt, if (c(1).equals("G")) Gloss else Matte)}
-
-      val paints = colorStrings.grouped(2).map(paintBuilder).toList
+      val paints = colorStrings.grouped(2).map(paintBuilder).toSet
       paintSet ++= paints
       userArray :+= new Customer(paints)
     }
