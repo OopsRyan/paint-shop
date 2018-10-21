@@ -4,15 +4,25 @@ import scala.io.Source
 
 object FileParser {
 
-  def readText(filePath: String): (Array[User], Set[Paint]) = {
+  /**
+    * Read data from the text file
+    * @param filePath The given data file path
+    * @return Tuple2(the iterator for data, the number of customers)
+    */
+  def readText(filePath: String): (Array[Customer], Set[Paint]) = {
 
     val iterator = Source.fromFile(filePath).getLines()
 
     val size = getSize(iterator)
 
-    createUsers(iterator, size)
+    createCustomers(iterator, size)
   }
 
+  /**
+    * Validate the data, and return the number of customers
+    * @param iterator The iterator for data
+    * @return The number of customers
+    */
   def getSize(iterator: Iterator[String]) = {
     if (iterator.isEmpty) throw new DataErrorException("The data file is empty")
 
@@ -23,27 +33,39 @@ object FileParser {
     size.toInt
   }
 
-  private def createUsers(iterator: Iterator[String], size: Int): (Array[User], Set[Paint]) = {
+  /**
+    * Parse data line by line, build paints for each customers
+    * @param iterator The iterator for data
+    * @param size The number of customers
+    * @return Tuple2(customer array, the paint set)
+    */
+  private def createCustomers(iterator: Iterator[String], size: Int): (Array[Customer], Set[Paint]) = {
 
-    var userArray = Array[User]()
+    var userArray = Array[Customer]()
     var paintSet = Set[Paint]()
 
     while(iterator.hasNext) {
-      var colorString = iterator.next().split(" ")
+      var colorStrings = iterator.next().split(" ")
 
-      if(colorString.size % 2 != 0) throw new DataErrorException(s"${colorString.toString} is not correctly defined")
+      if(colorStrings.length % 2 != 0)
+        throw new DataErrorException(s"${colorStrings.toString} is not correctly defined")
 
       val paintBuilder:((Array[String] => Paint)) = {
         c => Paint(c(0).toInt, if (c(1).equals("G")) Gloss else Matte)}
 
-      val paints = colorString.grouped(2).map(paintBuilder).toList
+      val paints = colorStrings.grouped(2).map(paintBuilder).toList
       paintSet ++= paints
-      userArray :+= new User(paints)
+      userArray :+= new Customer(paints)
     }
 
     (userArray, paintSet)
   }
 }
 
-final case class DataErrorException(msg: String="", cause: Throwable = None.orNull)
+/**
+  * Custom exception for data validation
+  * @param msg
+  * @param cause
+  */
+final class DataErrorException(msg: String="", cause: Throwable = None.orNull)
   extends Exception(msg, cause)

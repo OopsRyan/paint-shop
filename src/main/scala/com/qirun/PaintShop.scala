@@ -1,12 +1,16 @@
 package com.qirun
 
 sealed trait Color
-final case object Gloss extends Color
-final case object Matte extends Color
+final case object Gloss extends Color {
+  override def toString: String = "G"
+}
+final case object Matte extends Color {
+  override def toString: String = "M"
+}
 
 case class Paint(id: Int, color: Color)
 
-class User(paints: List[Paint]) {
+class Customer(paints: List[Paint]) {
   override def toString: String = paints.toString()
 }
 
