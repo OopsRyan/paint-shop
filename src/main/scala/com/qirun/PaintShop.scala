@@ -1,5 +1,7 @@
 package com.qirun
 
+import org.apache.logging.log4j.scala.Logging
+
 sealed trait Color
 final case object Gloss extends Color {
   override def toString: String = "G"
@@ -17,14 +19,14 @@ class Customer(val paints: Set[Paint]) {
 }
 
 
-object PaintShop {
+object PaintShop extends Logging{
   def main(args: Array[String]): Unit = {
 
     val ((customers, paints), size) = FileParser.readText("src/test/resources/case1.txt")
 
     val combination = mixColor(customers, paints, size)
 
-    println(getResult(combination))
+    logger.info(getResult(combination))
   }
 
   /**

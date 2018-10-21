@@ -53,6 +53,10 @@ object FileParser {
         throw new DataErrorException(s"${colorStrings.toString} is not correctly defined")
 
       val paints = colorStrings.grouped(2).map(paintBuilder).toSet
+
+      if(paints.count(_.color == Matte) > 1)
+        throw new DataErrorException("No customer will like more than one color in matte.")
+
       paintSet ++= paints
       userArray :+= new Customer(paints)
     }
