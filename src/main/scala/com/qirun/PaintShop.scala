@@ -22,28 +22,42 @@ object PaintShop {
 
     val ((customers, paints), size) = FileParser.readText("src/test/resources/case1.txt")
 
-    // Debug
-//    customers.foreach(println(_))
-//    paints.foreach(println(_))
-
     val combination = mixColor(customers, paints, size)
 
-    val result: String = if (combination.isDefined) {
-      combination.get.mkString(" ")
-    } else
-      "No solution exists"
-
-    println(result)
+    println(getResult(combination))
   }
 
+  /**
+    * Find the combination of mixed paint colors with the least Matte
+    * @param customers The customer array
+    * @param paints The paint set
+    * @param size The number of colors
+    * @return A combination of paint colors with the least Matte
+    */
   def mixColor(customers: Array[Customer], paints: Set[Paint], size: Int): Option[List[Paint]] = {
-    
-    paints.toList.combinations(size)
-      .find{
+
+    // For each possible combination, iterate the customer arrays to find
+    // if all customers have at least one like color in this combination
+    // Note: the performance is the most serious issue
+    // *** O(n^3), and some extra space needed due to toSet ***
+    val satisfiedCom = paints.toList.combinations(size)
+      .filter{
         p: List[Paint] =>
           customers.count{
             c => c.paints.intersect(p.toSet).nonEmpty
           } == customers.length
       }
+
+    // For all satisfied combinations, sort them by the number of Matte paints they have
+    satisfiedCom.toList
+      .sortWith(_.count(_.color == Matte) < _.count(_.color == Matte))
+      .headOption
+  }
+
+  def getResult(combination: Option[List[Paint]]): String = {
+    if (combination.isDefined)
+      combination.get.mkString(" ")
+    else
+      "No solution exists"
   }
 }
